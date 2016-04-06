@@ -1,0 +1,46 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:c="http://www.springframework.org/schema/c" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation=" http://www.springframework.org/schema/beans 
+		http://www.springframework.org/schema/beans/spring-beans.xsd 
+		http://www.springframework.org/schema/context   
+        http://www.springframework.org/schema/context/spring-context-3.0.xsd 
+        http://www.springframework.org/schema/mvc 
+        http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd
+        http://www.springframework.org/schema/util
+        http://www.springframework.org/schema/util/spring-util.xsd">
+
+	<mvc:annotation-driven />
+	<context:component-scan base-package="com.cognizant.poc.controller" />
+	<context:component-scan base-package="com.cognizant.poc.service" />
+	<context:component-scan base-package="com.cognizant.poc.service.store.impl" />
+
+	<util:properties id="properties"
+		location="classpath:environment.${spring_profiles_active:}.properties" />
+
+	<bean id="multipartResolver"
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<!-- one of the properties available; the maximum file size in bytes -->
+		<property name="maxUploadSize" value="500000" />
+	</bean>
+
+	<bean id="objectStoreService" class="com.cognizant.poc.service.ObjectStoreService" />
+
+	<beans profile="on-premise">
+		<bean id="objectStore" class="com.cognizant.poc.service.store.impl.FileStore">
+			<property name="destinationFolder" value="#{properties['destinationFolder']}" />
+		</bean>
+	</beans>
+
+	<beans profile="on-cloud">
+		<bean id="objectStore" class="com.cognizant.poc.service.store.impl.S3Store">
+			<property name="awsAccessKey" value="#{properties['awsAccessKey']}" />
+			<property name="awsSecretKey" value="#{properties['awsSecretKey']}" />
+			<property name="awsBucketName" value="#{properties['awsBucketName']}" />
+			<property name="awsFolderName" value="#{properties['awsFolderName']}" />
+			<property name="awsLocalPath" value="#{properties['awsLocalPath']}" />
+		</bean>
+	</beans>
+
+</beans> 
